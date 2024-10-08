@@ -12,6 +12,9 @@ struct dwm_painter
 	void* dwm_comm;
 	double scale;
 	HWND hwnd;
+
+	float wnd_left;
+	float wnd_top;
 };
 
 static inline dwm_painter* to_painter(void* object)
@@ -41,7 +44,7 @@ static double GetScreenScale_Win10()
 static double GetScreenScale()
 {
 	quick_import_function("ntdll.dll", RtlGetVersion);
-
+	return 1.0f;
 	RTL_OSVERSIONINFOW osversion;
 	if (NT_SUCCESS(RtlGetVersion(&osversion)))
 	{
@@ -57,7 +60,7 @@ static double GetScreenScale()
 	return 1.0f;
 }
 
-void* dwm_painter_init(size_t init_size, size_t screen_w, size_t screen_h, HWND wnd)
+void* dwm_painter_init(size_t init_size, size_t screen_w, size_t screen_h, HWND wnd, bool is_client_area)
 {
 	void* dwm_comm = dwm_comm_open();
 	if(dwm_comm == NULL)
@@ -73,6 +76,19 @@ void* dwm_painter_init(size_t init_size, size_t screen_w, size_t screen_h, HWND 
 	painter->dwm_comm = dwm_comm;
 	painter->hwnd = wnd;
 	painter->scale = GetScreenScale();
+
+	if (is_client_area)
+	{
+		POINT topLeft = { 0,0 };
+		ClientToScreen(wnd, &topLeft);
+		painter->wnd_left = topLeft.x;
+		painter->wnd_top = topLeft.y;
+	}
+	else
+	{
+		painter->wnd_left = 0.0f;
+		painter->wnd_top = 0.0f;
+	}
 	return painter;
 }
 
@@ -124,14 +140,15 @@ void dwm_painter_add_text(void* painter, const char* str, float x, float y, int 
 {
 	dwm_painter* _painter = to_painter(painter);
 	double sacle = _painter->scale;
+
 	x *= sacle;
 	y *= sacle;
+	x += _painter->wnd_left;
+	y += _painter->wnd_top;
 
-	RECT rc = {};
-	GetWindowRect(_painter->hwnd, &rc);
 	draw_info info(draw_type::text);
-	info.info.text.x = x + rc.left;
-	info.info.text.y = y + rc.top;
+	info.info.text.x = x;
+	info.info.text.y = y;
 	info.info.text.color = color;
 	info.info.text.size = size;
 	info.info.text.outline = outline;
@@ -146,10 +163,15 @@ void dwm_painter_add_line(void* painter, float p1_x, float p1_y, float p2_x, flo
 {
 	dwm_painter* _painter = to_painter(painter);
 	double sacle = _painter->scale;
+
 	p1_x *= sacle;
 	p1_y *= sacle;
 	p2_x *= sacle;
 	p2_y *= sacle;
+	p1_x += _painter->wnd_left;
+	p1_y += _painter->wnd_top;
+	p2_x += _painter->wnd_left;
+	p2_y += _painter->wnd_top;
 
 	RECT rc = {};
 	GetWindowRect(_painter->hwnd, &rc);
@@ -167,8 +189,11 @@ void dwm_painter_add_rect(void* painter, float x, float y, float w, float h, int
 {
 	dwm_painter* _painter = to_painter(painter);
 	double sacle = _painter->scale;
+
 	x *= sacle;
 	y *= sacle;
+	x += _painter->wnd_left;
+	y += _painter->wnd_top;
 
 	RECT rc = {};
 	GetWindowRect(_painter->hwnd, &rc);
@@ -188,8 +213,11 @@ void dwm_painter_add_rect_filled(void* painter, float x, float y, float w, float
 {
 	dwm_painter* _painter = to_painter(painter);
 	double sacle = _painter->scale;
+
 	x *= sacle;
 	y *= sacle;
+	x += _painter->wnd_left;
+	y += _painter->wnd_top;
 
 	RECT rc = {};
 	GetWindowRect(_painter->hwnd, &rc);
@@ -209,8 +237,11 @@ void dwm_painter_add_circle(void* painter, float x, float y, float radius, int c
 {
 	dwm_painter* _painter = to_painter(painter);
 	double sacle = _painter->scale;
+
 	x *= sacle;
 	y *= sacle;
+	x += _painter->wnd_left;
+	y += _painter->wnd_top;
 
 	RECT rc = {};
 	GetWindowRect(_painter->hwnd, &rc);
@@ -228,8 +259,12 @@ void dwm_painter_add_circle_filled(void* painter, float x, float y, float radius
 {
 	dwm_painter* _painter = to_painter(painter);
 	double sacle = _painter->scale;
+
 	x *= sacle;
 	y *= sacle;
+	x += _painter->wnd_left;
+	y += _painter->wnd_top;
+
 
 	RECT rc = {};
 	GetWindowRect(_painter->hwnd, &rc);

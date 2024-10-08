@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-void* dwm_painter_init(size_t init_size, size_t screen_w, size_t screen_h, HWND wnd);
+void* dwm_painter_init(size_t init_size, size_t screen_w, size_t screen_h, HWND wnd, bool is_client_area);
 
 void* dwm_painter_buffer(void* painter);
 

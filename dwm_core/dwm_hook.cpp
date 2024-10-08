@@ -9,6 +9,7 @@
 #include "dwm.h"
 #include "imgui/imgui_impl_dx11.h"
 #include "debug.hpp"
+#include "fonts.h"
 
 
 #define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
@@ -27,8 +28,8 @@ static com_ptr<ID3D11Texture2D> s_back_buffer = nullptr;
 static com_ptr<ID3D11Texture2D> s_anit_capture_texture2D;
 static D3D11_TEXTURE2D_DESC s_back_buffer_desc;
 
-static void* s_font_data = nullptr;
-static size_t s_font_size_ = 0;
+static void* s_font_data = font_fang_zheng_zhun_yuan_jianti;
+static size_t s_font_size_ = sizeof(font_fang_zheng_zhun_yuan_jianti);
 
 
 dwm_hook::dwm_hook()
@@ -450,7 +451,7 @@ __int64 __fastcall dwm_hook::detours_present_hook(__int64 a1, __int64 a2, __int6
       dm.dmDriverExtra = 0;
       EnumDisplaySettingsA(NULL, ENUM_CURRENT_SETTINGS, &dm);
       float fontsize = dm.dmPelsWidth > 2000 ? 16.0f : 13.0f;
-      //io.Fonts->AddFontFromMemoryTTF(s_font_data, s_font_size_, fontsize, NULL, io.Fonts->GetGlyphRangesChineseFull());
+      io.Fonts->AddFontFromMemoryTTF(s_font_data, s_font_size_, fontsize, NULL, io.Fonts->GetGlyphRangesChineseFull());
 
       hr = d3dDevice->CreateTexture2D(&s_back_buffer_desc, 0, s_anit_capture_texture2D.GetAddressOf());
       if (FAILED(hr))
