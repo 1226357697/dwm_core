@@ -13,6 +13,7 @@ struct dwm_painter
 	double scale;
 	HWND hwnd;
 
+	bool in_client_mode;
 	float wnd_left;
 	float wnd_top;
 };
@@ -60,6 +61,23 @@ static double GetScreenScale()
 	return 1.0f;
 }
 
+static void refresh_dwm_painter_status(dwm_painter* painter)
+{
+	if (painter->in_client_mode)
+	{
+		quick_import_function("User32.dll", ClientToScreen);
+		POINT topLeft = { 0,0 };
+		ClientToScreen(painter->hwnd, &topLeft);
+		painter->wnd_left = topLeft.x;
+		painter->wnd_top = topLeft.y;
+	}
+	else
+	{
+		painter->wnd_left = 0.0f;
+		painter->wnd_top = 0.0f;
+	}
+}
+
 void* dwm_painter_init(size_t init_size, size_t screen_w, size_t screen_h, HWND wnd, bool is_client_area)
 {
 	void* dwm_comm = dwm_comm_open();
@@ -76,19 +94,8 @@ void* dwm_painter_init(size_t init_size, size_t screen_w, size_t screen_h, HWND 
 	painter->dwm_comm = dwm_comm;
 	painter->hwnd = wnd;
 	painter->scale = GetScreenScale();
-
-	if (is_client_area)
-	{
-		POINT topLeft = { 0,0 };
-		ClientToScreen(wnd, &topLeft);
-		painter->wnd_left = topLeft.x;
-		painter->wnd_top = topLeft.y;
-	}
-	else
-	{
-		painter->wnd_left = 0.0f;
-		painter->wnd_top = 0.0f;
-	}
+	painter->in_client_mode = is_client_area;
+	refresh_dwm_painter_status(painter);
 	return painter;
 }
 
@@ -127,7 +134,9 @@ HWND dwm_painter_window(void* painter)
 void dwm_painter_new_frame(void* painter)
 {
 	dwm_painter* _painter = to_painter(painter);
-	return _painter->draw_buffer.clear();
+	_painter->draw_buffer.clear();
+
+	refresh_dwm_painter_status(_painter);
 }
 
 void dwm_painter_clear(void* painter)
@@ -173,13 +182,12 @@ void dwm_painter_add_line(void* painter, float p1_x, float p1_y, float p2_x, flo
 	p2_x += _painter->wnd_left;
 	p2_y += _painter->wnd_top;
 
-	RECT rc = {};
-	GetWindowRect(_painter->hwnd, &rc);
+
 	draw_info info(draw_type::line);
-	info.info.line.x1 = p1_x + rc.left;
-	info.info.line.y1 = p1_y + rc.top;
-	info.info.line.x2 = p2_x + rc.left;
-	info.info.line.y2 = p2_y + rc.top;
+	info.info.line.x1 = p1_x;
+	info.info.line.y1 = p1_y;
+	info.info.line.x2 = p2_x;
+	info.info.line.y2 = p2_y;
 	info.info.line.color = color;
 	info.info.line.thickness = thickness;
 	_painter->draw_buffer.push_back(info);
@@ -195,11 +203,9 @@ void dwm_painter_add_rect(void* painter, float x, float y, float w, float h, int
 	x += _painter->wnd_left;
 	y += _painter->wnd_top;
 
-	RECT rc = {};
-	GetWindowRect(_painter->hwnd, &rc);
 	draw_info info(draw_type::rect);
-	info.info.rect.x = x + rc.left;
-	info.info.rect.y = y + rc.top;
+	info.info.rect.x = x;
+	info.info.rect.y = y;
 	info.info.rect.w = w;
 	info.info.rect.h = h;
 	info.info.rect.color = color;
@@ -219,11 +225,9 @@ void dwm_painter_add_rect_filled(void* painter, float x, float y, float w, float
 	x += _painter->wnd_left;
 	y += _painter->wnd_top;
 
-	RECT rc = {};
-	GetWindowRect(_painter->hwnd, &rc);
 	draw_info info(draw_type::rect);
-	info.info.rect.x = x + rc.left;
-	info.info.rect.y = y + rc.top;
+	info.info.rect.x = x;
+	info.info.rect.y = y;
 	info.info.rect.w = w;
 	info.info.rect.h = h;
 	info.info.rect.color = color;
@@ -243,11 +247,9 @@ void dwm_painter_add_circle(void* painter, float x, float y, float radius, int c
 	x += _painter->wnd_left;
 	y += _painter->wnd_top;
 
-	RECT rc = {};
-	GetWindowRect(_painter->hwnd, &rc);
 	draw_info info(draw_type::circle);
-	info.info.circle.x = x + rc.left;
-	info.info.circle.y = y + rc.top;
+	info.info.circle.x = x;
+	info.info.circle.y = y;
 	info.info.circle.radius = radius;
 	info.info.circle.color = color;
 	info.info.circle.thickness = thickness;
@@ -265,12 +267,9 @@ void dwm_painter_add_circle_filled(void* painter, float x, float y, float radius
 	x += _painter->wnd_left;
 	y += _painter->wnd_top;
 
-
-	RECT rc = {};
-	GetWindowRect(_painter->hwnd, &rc);
 	draw_info info(draw_type::circle);
-	info.info.circle.x = x + rc.left;
-	info.info.circle.y = y + rc.top;
+	info.info.circle.x = x;
+	info.info.circle.y = y;
 	info.info.circle.radius = radius;
 	info.info.circle.color = color;
 	info.info.circle.thickness = thickness;
