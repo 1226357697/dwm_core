@@ -43,13 +43,23 @@ int main()
 
     const char* test_txt = (const char*)"¦²×ÔÃé×ÔÃé×ÔÃé£¡£¡£¡\nÎäÆ÷\n ×°±¸\n MI6A4\n AK\n ¿ÕÍ¶\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷Îä\nÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\nÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷ÎäÆ÷\n";
 
-    dwm_painter_add_text(painter, CharToUtf8(test_txt).c_str(), 0.0f, 0.0f, IM_COL32(100, 100, 0, 255), 50, false);
+    //dwm_painter_add_text(painter, CharToUtf8(test_txt).c_str(), 0.0f, 0.0f, IM_COL32(100, 100, 0, 255), 50, false);
 
-    dwm_painter_add_line(painter, 100, 100, 500, 300, 0xff0000ff, 1.0f);
-    dwm_painter_add_rect(painter, 600, 300, 50, 50, 0xff0000ff, 1.0f, 5.0f);
-    dwm_painter_add_rect_filled(painter, 800, 300, 50, 50, 0xff0000ff, 1.0f, 5.0f);
-    dwm_painter_add_circle(painter, 100, 900, 50, 0xff0000ff, 1.0f);
-    dwm_painter_add_circle_filled(painter, 700, 900, 50, 0xffffff00, 1.0f);
+    //dwm_painter_add_line(painter, 100, 100, 500, 300, 0xff0000ff, 1.0f);
+    //dwm_painter_add_rect(painter, 600, 300, 50, 50, 0xff0000ff, 1.0f, 5.0f);
+    //dwm_painter_add_rect_filled(painter, 800, 300, 50, 50, 0xff0000ff, 1.0f, 5.0f);
+    //dwm_painter_add_circle(painter, 100, 900, 50, 0xff0000ff, 1.0f);
+    //dwm_painter_add_circle_filled(painter, 700, 900, 50, 0xffffff00, 1.0f);
+
+
+    if (!(GetAsyncKeyState(VK_INSERT) & 0x8000))
+    {
+      const char path[] = "D:\\dwm_screenshot.png";
+
+      dwm_painter_screenshot(painter, path);
+      printf("screenshot save the path: %s\n", path);
+
+    }
 
     dwm_painter_present(painter);
   }

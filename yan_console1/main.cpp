@@ -5,6 +5,9 @@
 #include <assert.h>
 #include <thread>
 #include <Windows.h>
+#include <iostream>
+#include <fstream>
+#
 #include "../dwm_core/importer.h"
 #pragma comment(lib, "ntdll.lib")
 
@@ -171,8 +174,86 @@ bool veh_unhook()
   return false;
 }
 
+
+std::vector<char> readBinaryFile(const char* filepath)
+{
+  // 打开二进制文件
+  std::ifstream inputFile(filepath, std::ios::binary); // 以二进制模式打开文件
+
+  // 检查文件是否成功打开
+  if (!inputFile)
+  {
+    std::cerr << "Error opening file: " << filepath << std::endl;
+    return {};
+  }
+
+  // 获取文件的大小
+  inputFile.seekg(0, std::ios::end);
+  std::streampos fileSize = inputFile.tellg();
+  inputFile.seekg(0, std::ios::beg);
+
+  // 创建一个缓冲区来存储文件数据
+  std::vector<char> buffer(fileSize);
+
+  // 读取文件内容到缓冲区
+  inputFile.read(buffer.data(), fileSize);
+
+  // 检查读取是否成功
+  if (inputFile)
+  {
+    std::cout << "File read successfully! File size: " << fileSize << " bytes." << std::endl;
+  }
+  else
+  {
+    std::cerr << "Error reading file!" << std::endl;
+  }
+
+  // 输出读取的内容（这里仅展示前几个字节）
+  //std::cout << "First 10 bytes of the file:" << std::endl;
+  //for (int i = 0; i < 10 && i < buffer.size(); ++i)
+  //{
+  //    std::cout << std::hex << (0xFF & static_cast<unsigned char>(buffer[i])) << " ";
+  //}
+  //std::cout << std::dec << std::endl;
+
+  // 关闭文件
+  inputFile.close();
+  return buffer;
+}
+bool convertbmp(void* data, size_t size)
+{
+  BITMAPFILEHEADER bfh;
+  BITMAPINFOHEADER bih;
+  memset(&bfh, 0, sizeof(bfh));
+  memset(&bih, 0, sizeof(bih));
+  bfh.bfType = 0x4D42;
+  bfh.bfSize = sizeof(bfh) + sizeof(bih) + size;
+  bfh.bfOffBits = sizeof(bfh) + sizeof(bih);
+  bih.biSize = sizeof(bih);
+  bih.biWidth = 1920;
+  bih.biHeight = 1080;
+  bih.biPlanes = 1;
+  bih.biBitCount = 32;
+  bih.biCompression = BI_RGB;
+  bih.biSizeImage = size;
+  HANDLE f = CreateFileA("screenshot.bmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (f == INVALID_HANDLE_VALUE)
+  {
+    return false;
+  }
+  DWORD bytesWritten = 0;
+  bool result = WriteFile(f, &bfh, sizeof(bfh), &bytesWritten, NULL);
+  result = WriteFile(f, &bih, sizeof(bih), &bytesWritten, NULL);
+  result = WriteFile(f, data, size, &bytesWritten, NULL);
+  CloseHandle(f);
+  return result;
+}
+
 int main()
 {
+  auto buffer = readBinaryFile("D:\\dwm_screenshot.bmp");
+  convertbmp(buffer.data(), buffer.size()-44);
+  return 0;
   LoadLibraryA("dwm_core.dll");
   getchar();
   return 0;

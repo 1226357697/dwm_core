@@ -397,6 +397,86 @@ bool dwm_hook::veh_unhook()
   return false;
 }
 
+static bool write_binrary_data(const char* path, D3D11_TEXTURE2D_DESC* SwapChanDesc, void* data, size_t size)
+{
+  bool result = false;
+  HANDLE f = CreateFileA(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (f == INVALID_HANDLE_VALUE)
+  {
+    TRACE("CreateFileA failed");
+    return result;
+  }
+
+  DWORD bytesWritten = 0;
+
+  result = WriteFile(f, SwapChanDesc, sizeof(D3D11_TEXTURE2D_DESC), &bytesWritten, NULL);
+  result = WriteFile(f, data, static_cast<DWORD>(size), &bytesWritten, NULL);
+
+  if (result && bytesWritten == size)
+  {
+    result = true;
+  }
+  else
+  {
+    TRACE("WriteFile failed");
+    result = false;
+  }
+
+  CloseHandle(f);
+  return result;
+}
+
+bool dwm_hook::screenshot(const char* path)
+{
+
+  TRACE_INFO_V("screenshot path:%s", path);
+
+  bool result = false;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D>     pCaptureD3D11Texture2D;
+  D3D11_TEXTURE2D_DESC                        SwapChanDesc{};
+  static bool init = false;
+
+  if (init)
+  {
+    return false;
+  }
+
+
+  s_back_buffer->GetDesc(&SwapChanDesc);
+  SwapChanDesc.BindFlags = 0;
+  SwapChanDesc.MiscFlags = 0;
+  // CPU可访问的纹理
+  SwapChanDesc.CPUAccessFlags = 0x30000;
+  SwapChanDesc.Usage = D3D11_USAGE_STAGING;
+  HRESULT hr = s_d3d_device->CreateTexture2D(&SwapChanDesc, 0, pCaptureD3D11Texture2D.ReleaseAndGetAddressOf());
+
+
+
+  if (hr == S_OK)
+  {
+    s_d3d_device_context->CopyResource(pCaptureD3D11Texture2D.Get(), s_back_buffer.Get());
+
+    D3D11_MAPPED_SUBRESOURCE MappedResource{};
+    hr = s_d3d_device_context->Map(pCaptureD3D11Texture2D.Get(), 0, D3D11_MAP_READ_WRITE, 0,
+      &MappedResource);
+
+    if (hr == S_OK) {
+
+      result = write_binrary_data(path, &SwapChanDesc, MappedResource.pData, SwapChanDesc.Width * SwapChanDesc.Width * 4);
+      TRACE_INFO_V("screenshot write result:%d", result);
+
+      if (result)
+      {
+        init = true;
+      }
+
+    }
+  }
+
+  TRACE_INFO_V("screenshot result:%d", hr);
+  return result;
+}
+
 __int64 __fastcall dwm_hook::detours_present_hook(__int64 a1, __int64 a2, __int64 a3, __int64 a4, __int64 a5, __int64 a6, __int64 a7, __int64 a8)
 {
 

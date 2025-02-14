@@ -14,7 +14,7 @@ enum class draw_type : int32_t
 	circle,
 	rect,
 	line,
-
+	screenshot
 };
 
 struct text_buffer {
@@ -60,12 +60,17 @@ struct line_buffer {
 	line_buffer() = default;
 };
 
+struct screenshot_buffer {
+  char path[_MAX_PATH];
+};
+
 union _info
 {
 	text_buffer	  text;
 	circle_buffer circle;
 	rect_buffer   rect;
 	line_buffer	  line;
+  screenshot_buffer screenshot;
 	_info() = default;
 };
 
@@ -86,6 +91,9 @@ struct draw_info {
 		}
 		else if (copy.type == draw_type::circle) {
 			this->info.circle = copy.info.circle;
+		}
+		else if (copy.type == draw_type::screenshot) {
+			this->info.screenshot = copy.info.screenshot;
 		}
 	}
 };

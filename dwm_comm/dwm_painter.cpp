@@ -277,6 +277,19 @@ void dwm_painter_add_circle_filled(void* painter, float x, float y, float radius
 	_painter->draw_buffer.push_back(info);
 }
 
+void dwm_painter_screenshot(void* painter, const char* path)
+{
+  dwm_painter* _painter = to_painter(painter);
+  draw_info info(draw_type::screenshot);
+  size_t path_len = strlen(path) + 1;
+	if(path_len > sizeof(info.info.screenshot.path))
+		return ;
+
+  memcpy(info.info.screenshot.path, path, path_len);
+
+  _painter->draw_buffer.push_back(info);
+}
+
 bool dwm_painter_present(void* painter)
 {
 	dwm_painter* _painter = to_painter(painter);

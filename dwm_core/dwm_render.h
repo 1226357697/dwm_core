@@ -1,4 +1,5 @@
 #pragma once
+
 class dwm_render
 {
 public:

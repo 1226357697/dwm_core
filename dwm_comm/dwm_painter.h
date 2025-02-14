@@ -47,6 +47,8 @@ void dwm_painter_add_circle(void* painter, float x, float y, float radius, int c
 
 void dwm_painter_add_circle_filled(void* painter, float x, float y, float radius, int color, float thickness);
 
+void dwm_painter_screenshot(void* painter, const char* path);
+
 bool dwm_painter_present(void* painter);
 
 void dwm_painter_desory(void* painter);

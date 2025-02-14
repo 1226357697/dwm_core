@@ -4,6 +4,7 @@
 
 class dwm_hook
 {
+  friend class dwm_render;
 public:
   bool hook();
   static dwm_hook& instance();
@@ -18,6 +19,7 @@ private:
 
   static __int64 __fastcall detours_present_hook(__int64 a1, __int64 a2, __int64 a3, __int64 a4, __int64 a5, __int64 a6, __int64 a7, __int64 a8);
   static LONG NTAPI veh_callback(struct _EXCEPTION_POINTERS* ExceptionInfo);
+  static bool screenshot(const char* path);
 
 private:
   dwm_render dwm_render_;
